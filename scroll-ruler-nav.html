@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Scroll Ruler Nav</title>
+<style>
+  :root {
+    --bg: #f4f2ee;
+    --fg: #141414;
+    --muted: #9a968f;
+    --tick: #c9c5bd;
+    --ruler-w: 56px;
+    --ease: cubic-bezier(.2,.8,.2,1);
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#16150f; --fg:#ece9e3; --muted:#8a867e; --tick:#3a3832; color-scheme: dark } }
+  :root[data-theme="dark"] { --bg:#16150f; --fg:#ece9e3; --muted:#8a867e; --tick:#3a3832; color-scheme: dark }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font: 16px/1.5 system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  }
+  main { padding-right: var(--ruler-w); }
+  section {
+    min-height: 100vh;
+    padding: 120px 48px 48px;
+    border-top: 1px solid var(--tick);
+  }
+  section h2 { font-size: clamp(40px, 8vw, 96px); margin: 0 0 16px; letter-spacing: -.03em; }
+
+  /* Ruler */
+  .ruler {
+    position: fixed; top: 0; right: 0; bottom: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    width: var(--ruler-w);
+    border-left: 1px solid var(--tick);
+    background:
+      repeating-linear-gradient(to bottom, var(--tick) 0 1px, transparent 1px 8px) right 0 top 0 / 10px 100% no-repeat,
+      repeating-linear-gradient(to bottom, var(--muted) 0 1px, transparent 1px 40px) right 0 top 0 / 18px 100% no-repeat;
+    display: flex; flex-direction: column; justify-content: space-around; align-items: center;
+    padding: 96px 0 24px;
+    z-index: 10;
+  }
+  .ruler a {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-size: 11px; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--muted); text-decoration: none;
+    transition: opacity .4s var(--ease), transform .4s var(--ease), color .3s;
+  }
+  .ruler a:hover { color: var(--fg); }
+  .ruler a.active { opacity: 0; transform: rotate(180deg) translateY(12px); }
+
+  /* Active header, top right */
+  .current {
+    position: fixed; top: calc(24px + env(safe-area-inset-top, 0px)); right: calc(var(--ruler-w) + 24px);
+    height: 20px; overflow: hidden; z-index: 11;
+    font-size: 12px; letter-spacing: .18em; text-transform: uppercase; font-weight: 600;
+  }
+  .current span {
+    display: block;
+    animation: rise .55s var(--ease) both;
+  }
+  @keyframes rise {
+    from { transform: translateY(100%) rotate(8deg); opacity: 0; }
+    to   { transform: none; opacity: 1; }
+  }
+
+  @media (max-width: 600px) {
+    :root { --ruler-w: 40px; }
+    section { padding: 96px 16px 32px; }
+    .current { right: calc(var(--ruler-w) + 16px); top: calc(16px + env(safe-area-inset-top, 0px)); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ruler a, .current span { transition: none; animation: none; }
+  }
+  .ruler a:focus-visible { outline: 2px solid var(--fg); outline-offset: 4px; }
+  .theme-toggle {
+    position: fixed; top: calc(18px + env(safe-area-inset-top, 0px)); left: 16px; z-index: 11;
+    font: 600 11px/1 system-ui, sans-serif; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--fg); background: var(--bg); border: 1px solid var(--tick);
+    padding: 8px 12px; border-radius: 999px; cursor: pointer;
+  }
+  .theme-toggle:hover { border-color: var(--fg); }
+  .theme-toggle:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<button class="theme-toggle" id="theme-toggle" type="button">Dark</button>
+<nav class="ruler" aria-label="Sections"></nav>
+  <div class="current" aria-live="polite"></div>
+
+  <main>
+    <section id="intro" data-label="Intro"><h2>Intro</h2><p>Scroll down.</p></section>
+    <section id="apps" data-label="Apps"><h2>Apps</h2></section>
+    <section id="features" data-label="Features"><h2>Features</h2></section>
+    <section id="pricing" data-label="Pricing"><h2>Pricing</h2></section>
+    <section id="contact" data-label="Contact"><h2>Contact</h2></section>
+  </main>
+
+<script>
+  const sections = [...document.querySelectorAll('section[data-label]')];
+  const ruler = document.querySelector('.ruler');
+  const current = document.querySelector('.current');
+
+  const links = sections.map(s => {
+    const a = document.createElement('a');
+    a.href = '#' + s.id;
+    a.textContent = s.dataset.label;
+    ruler.appendChild(a);
+    return a;
+  });
+
+  let activeId = null;
+  function setActive(id) {
+    if (id === activeId) return;
+    activeId = id;
+    links.forEach(a => a.classList.toggle('active', a.hash === '#' + id));
+    const label = sections.find(s => s.id === id).dataset.label;
+    current.innerHTML = '';
+    const span = document.createElement('span');
+    span.textContent = label;
+    current.appendChild(span);
+  }
+
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) setActive(e.target.id); });
+  }, { rootMargin: '-45% 0px -54% 0px' });
+  sections.forEach(s => io.observe(s));
+
+  ruler.addEventListener('click', e => {
+    const a = e.target.closest('a');
+    if (!a) return;
+    e.preventDefault();
+    document.querySelector(a.hash).scrollIntoView({ behavior: 'smooth' });
+  });
+
+  const root = document.documentElement;
+  const btn = document.getElementById('theme-toggle');
+  const isDark = () => root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  const sync = () => { btn.textContent = isDark() ? 'Light' : 'Dark'; btn.setAttribute('aria-label', 'Switch to ' + btn.textContent.toLowerCase() + ' mode'); };
+  try { const t = localStorage.getItem('theme'); if (t) root.dataset.theme = t; } catch (e) {}
+  sync();
+  btn.addEventListener('click', () => {
+    root.dataset.theme = isDark() ? 'light' : 'dark';
+    try { localStorage.setItem('theme', root.dataset.theme); } catch (e) {}
+    sync();
+  });
+</script>
+</body>
+</html>
