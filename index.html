@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inspo Project Index</title>
+<style>
+  /* Layout: one column log, newest first, table scrolls sideways on phones */
+  :root {
+    --bg: #f5f4f1;
+    --fg: #17161a;
+    --muted: #6f6c75;
+    --line: #dddad3;
+    --accent: #3a63d1;
+    --chip: #e9e6df;
+    --body: system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#141317; --fg:#ecebef; --muted:#9b97a1; --line:#2f2d34; --accent:#7f9fff; --chip:#24222a; color-scheme: dark } }
+  :root[data-theme="dark"] { --bg:#141317; --fg:#ecebef; --muted:#9b97a1; --line:#2f2d34; --accent:#7f9fff; --chip:#24222a; color-scheme: dark }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 var(--body); }
+  .wrap { max-width: 1100px; margin: 0 auto; padding-inline: 16px; padding-block: 40px 64px; }
+  h1 { font-size: 26px; margin: 0 0 4px; text-wrap: balance; }
+  .sub { color: var(--muted); margin: 0 0 28px; }
+  .table-scroll { overflow-x: auto; border-top: 1px solid var(--line); }
+  table { width: 100%; border-collapse: collapse; min-width: 820px; }
+  th, td { text-align: left; vertical-align: top; padding: 12px 14px 12px 0; border-bottom: 1px solid var(--line); }
+  th { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  td.date { white-space: nowrap; color: var(--muted); font-variant-numeric: tabular-nums; }
+  td.name { font-weight: 600; min-width: 170px; }
+  td.what { max-width: 400px; }
+  .chip { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .04em; padding: 2px 8px; border-radius: 999px; background: var(--chip); color: var(--muted); white-space: nowrap; }
+  .chip.live { color: var(--accent); }
+  .links { display: flex; flex-direction: column; gap: 4px; white-space: nowrap; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .old td { color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Inspo Project Index</h1>
+  <p class="sub">Every inspo build and rebuild, newest first.</p>
+
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr><th>Date</th><th>Project</th><th>Type</th><th>What</th><th>View</th><th>Inspired by</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="date">Oct 11, 2026</td>
+          <td class="name">Scroll Ruler v2</td>
+          <td><span class="chip live">Rebuild</span></td>
+          <td class="what">Numbered ruler with a progress marker. Vertical section labels ride up the ruler, then their letters fly along an arc into a top-right header stack.</td>
+          <td><div class="links">
+            <a href="scroll-ruler-nav.html">Browser</a>
+            <a href="https://github.com/gammagracie/inspo/blob/main/scroll-ruler-nav.html">Git</a>
+          </div></td>
+          <td><a href="https://getartcraft.com/apps">getartcraft.com/apps</a></td>
+        </tr>
+        <tr>
+          <td class="date">Oct 10, 2026</td>
+          <td class="name">Look Close Overlay Boxes</td>
+          <td><span class="chip live">New</span></td>
+          <td class="what">Pinned image with scrolling caption cards. Each card zooms into a boxed detail. Tap any box to jump to it.</td>
+          <td><div class="links">
+            <a href="look-close-overlay.html">Browser</a>
+            <a href="https://github.com/gammagracie/inspo/blob/main/look-close-overlay.html">Git</a>
+          </div></td>
+          <td><a href="https://www.nytimes.com/interactive/2026/10/08/technology/ai-generated-image-look-close.html">nytimes.com</a></td>
+        </tr>
+        <tr class="old">
+          <td class="date">Oct 9, 2026</td>
+          <td class="name">Scroll Ruler v1</td>
+          <td><span class="chip">Replaced</span></td>
+          <td class="what">First version. Ruler with vertical labels, active label moves to a top-right header. Replaced by v2.</td>
+          <td><div class="links">
+            <a href="https://github.com/gammagracie/inspo/blob/887cc51/scroll-ruler-nav.html">Git (v1)</a>
+          </div></td>
+          <td><a href="https://getartcraft.com/apps">getartcraft.com/apps</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</body>
+</html>
