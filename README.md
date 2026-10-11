@@ -5,9 +5,9 @@ Functionality and styling to reuse.
 ## 1. Scroll ruler nav (vertical labels that flip to a header)
 
 - Source: https://getartcraft.com/apps
-- What: Right edge has a ruler with tick marks and vertical (rotated) section labels. When a section scrolls into view, its label animates up and turns horizontal as the active header in the top right.
+- What: Right edge is a numbered ruler that scrolls with the page, with a blue marker showing scroll progress. Each upcoming section's name rides up beside the ruler as vertical text. When the section is reached, its letters swing one by one along an arc into a horizontal header in the top right. Past headers shrink into a small stack above it. Upcoming sections are listed small in the bottom right.
 - Demo: [scroll-ruler-nav.html](scroll-ruler-nav.html)
-- How: `IntersectionObserver` sets the active section. Labels use `writing-mode: vertical-rl`. The active label is cloned into a fixed top-right slot with a slide-up + fade transition. Ruler ticks are a `repeating-linear-gradient`. Respects `prefers-reduced-motion`. Dark mode follows the system setting, with a Dark/Light toggle top left that remembers the choice.
+- How: Scroll handler (rAF throttled) picks the active section and places vertical labels at their section's top edge. The fly-in measures each letter's rect in the vertical label and in the header, then animates a floating copy of each letter with the Web Animations API, from rotate(-90deg) and small scale through a mid-arc keyframe to its final spot, staggered from the last letter. Ruler scale is a page-height strip translated by scrollY. Dark mode follows the system setting, with a Dark/Light toggle. Respects `prefers-reduced-motion`.
 
 ## 2. Look-close overlay boxes (scroll and tap to zoom into image details)
 

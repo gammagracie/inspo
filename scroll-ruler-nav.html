@@ -4,17 +4,24 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Scroll Ruler Nav</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,500;125,800&family=JetBrains+Mono:wght@500&display=swap">
 <style>
   :root {
-    --bg: #f4f2ee;
-    --fg: #141414;
-    --muted: #9a968f;
-    --tick: #c9c5bd;
+    --bg: #f4f3f0;
+    --fg: #141416;
+    --muted: #8d8b92;
+    --tick: #cfcdc8;
+    --accent: #3d6fe0;
     --ruler-w: 56px;
+    --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
     --ease: cubic-bezier(.2,.8,.2,1);
   }
-  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#16150f; --fg:#ece9e3; --muted:#8a867e; --tick:#3a3832; color-scheme: dark } }
-  :root[data-theme="dark"] { --bg:#16150f; --fg:#ece9e3; --muted:#8a867e; --tick:#3a3832; color-scheme: dark }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#121214; --fg:#ecebef; --muted:#77757d; --tick:#2c2b30; --accent:#6f97ff; color-scheme: dark } }
+  :root[data-theme="dark"] { --bg:#121214; --fg:#ecebef; --muted:#77757d; --tick:#2c2b30; --accent:#6f97ff; color-scheme: dark }
+
   * { box-sizing: border-box; }
   body {
     margin: 0;
@@ -24,59 +31,88 @@
   }
   main { padding-right: var(--ruler-w); }
   section {
-    min-height: 100vh;
-    padding: 120px 48px 48px;
+    min-height: 130vh;
+    padding: 140px 48px 48px;
     border-top: 1px solid var(--tick);
   }
-  section h2 { font-size: clamp(40px, 8vw, 96px); margin: 0 0 16px; letter-spacing: -.03em; }
+  section h2 {
+    font: 800 clamp(36px, 7vw, 88px)/1 var(--display);
+    letter-spacing: -.02em; margin: 0 0 16px; text-wrap: balance;
+  }
+  section p { color: var(--muted); max-width: 46ch; margin: 0; }
 
-  /* Ruler */
+  /* Ruler: scale scrolls with the page, marker shows progress */
   .ruler {
-    position: fixed; top: 0; right: 0; bottom: 0;
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-    width: var(--ruler-w);
-    border-left: 1px solid var(--tick);
-    background:
-      repeating-linear-gradient(to bottom, var(--tick) 0 1px, transparent 1px 8px) right 0 top 0 / 10px 100% no-repeat,
-      repeating-linear-gradient(to bottom, var(--muted) 0 1px, transparent 1px 40px) right 0 top 0 / 18px 100% no-repeat;
-    display: flex; flex-direction: column; justify-content: space-around; align-items: center;
-    padding: 96px 0 24px;
-    z-index: 10;
+    position: fixed; top: 0; right: 0; bottom: 0; width: var(--ruler-w);
+    border-left: 1px solid var(--tick); overflow: hidden; z-index: 10;
+    background: var(--bg);
   }
-  .ruler a {
-    writing-mode: vertical-rl;
-    transform: rotate(180deg);
-    font-size: 11px; letter-spacing: .18em; text-transform: uppercase;
+  .scale { position: absolute; top: 0; right: 0; width: 100%; will-change: transform; }
+  .scale::before {
+    content: ""; position: absolute; inset: 0 0 0 auto; width: 10px;
+    background: repeating-linear-gradient(to bottom, var(--tick) 0 1px, transparent 1px 12px);
+  }
+  .mark { position: absolute; right: 0; display: flex; align-items: center; gap: 4px; transform: translateY(-50%); }
+  .mark i { display: block; width: 18px; height: 1px; background: var(--muted); }
+  .mark b { font: 500 9px/1 var(--mono); color: var(--muted); }
+  .marker {
+    position: absolute; right: 0; width: 100%; height: 1px; background: var(--accent);
+    will-change: transform;
+  }
+  .marker span {
+    position: absolute; right: 2px; top: 4px;
+    font: 500 9px/1 var(--mono); color: var(--accent);
+  }
+
+  /* Vertical section labels riding along the ruler */
+  .vlabel {
+    position: fixed; top: 0; right: calc(var(--ruler-w) + 6px); z-index: 9;
+    writing-mode: vertical-rl; transform: rotate(180deg);
+    font: 800 13px/1 var(--display); letter-spacing: .06em; text-transform: uppercase;
+    color: var(--muted); text-decoration: none; white-space: nowrap;
+    transition: color .3s;
+  }
+  .vlabel:hover { color: var(--fg); }
+  .vlabel[hidden] { display: none; }
+  .vlabel span { display: inline-block; }
+
+  /* Header stack, top right */
+  .hud {
+    position: fixed; top: calc(20px + env(safe-area-inset-top, 0px)); right: calc(var(--ruler-w) + 20px);
+    z-index: 11; text-align: right; pointer-events: none;
+  }
+  .past { display: flex; flex-direction: column; gap: 2px; }
+  .past a {
+    font: 800 11px/1.1 var(--display); letter-spacing: .06em; text-transform: uppercase;
+    color: var(--muted); text-decoration: none; pointer-events: auto;
+  }
+  .past a:hover { color: var(--fg); }
+  .now {
+    font: 800 22px/1.1 var(--display); letter-spacing: .04em; text-transform: uppercase;
+    margin-top: 6px; white-space: nowrap; min-height: 1.1em;
+  }
+  .now span { display: inline-block; }
+  .now.landing span { visibility: hidden; }
+
+  /* Upcoming list, bottom right */
+  .next {
+    position: fixed; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); right: calc(var(--ruler-w) + 20px);
+    z-index: 11; display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
+  }
+  .next a {
+    font: 800 10px/1.1 var(--display); letter-spacing: .06em; text-transform: uppercase;
     color: var(--muted); text-decoration: none;
-    transition: opacity .4s var(--ease), transform .4s var(--ease), color .3s;
   }
-  .ruler a:hover { color: var(--fg); }
-  .ruler a.active { opacity: 0; transform: rotate(180deg) translateY(12px); }
+  .next a:hover { color: var(--fg); }
 
-  /* Active header, top right */
-  .current {
-    position: fixed; top: calc(24px + env(safe-area-inset-top, 0px)); right: calc(var(--ruler-w) + 24px);
-    height: 20px; overflow: hidden; z-index: 11;
-    font-size: 12px; letter-spacing: .18em; text-transform: uppercase; font-weight: 600;
-  }
-  .current span {
-    display: block;
-    animation: rise .55s var(--ease) both;
-  }
-  @keyframes rise {
-    from { transform: translateY(100%) rotate(8deg); opacity: 0; }
-    to   { transform: none; opacity: 1; }
+  .fly {
+    position: fixed; left: 0; top: 0; z-index: 12; pointer-events: none;
+    font: 800 22px/1.1 var(--display); letter-spacing: .04em; text-transform: uppercase;
+    color: var(--fg); transform-origin: 50% 50%; will-change: transform;
   }
 
-  @media (max-width: 600px) {
-    :root { --ruler-w: 40px; }
-    section { padding: 96px 16px 32px; }
-    .current { right: calc(var(--ruler-w) + 16px); top: calc(16px + env(safe-area-inset-top, 0px)); }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .ruler a, .current span { transition: none; animation: none; }
-  }
-  .ruler a:focus-visible { outline: 2px solid var(--fg); outline-offset: 4px; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
   .theme-toggle {
     position: fixed; top: calc(18px + env(safe-area-inset-top, 0px)); left: 16px; z-index: 11;
     font: 600 11px/1 system-ui, sans-serif; letter-spacing: .18em; text-transform: uppercase;
@@ -84,58 +120,174 @@
     padding: 8px 12px; border-radius: 999px; cursor: pointer;
   }
   .theme-toggle:hover { border-color: var(--fg); }
-  .theme-toggle:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+
+  @media (max-width: 600px) {
+    :root { --ruler-w: 40px; }
+    section { padding: 120px 16px 32px; }
+    .hud { right: calc(var(--ruler-w) + 12px); }
+    .now, .fly { font-size: 17px; }
+    .next { right: calc(var(--ruler-w) + 12px); }
+    .vlabel { font-size: 11px; }
+  }
 </style>
 </head>
 <body>
 <button class="theme-toggle" id="theme-toggle" type="button">Dark</button>
-<nav class="ruler" aria-label="Sections"></nav>
-  <div class="current" aria-live="polite"></div>
 
-  <main>
-    <section id="intro" data-label="Intro"><h2>Intro</h2><p>Scroll down.</p></section>
-    <section id="apps" data-label="Apps"><h2>Apps</h2></section>
-    <section id="features" data-label="Features"><h2>Features</h2></section>
-    <section id="pricing" data-label="Pricing"><h2>Pricing</h2></section>
-    <section id="contact" data-label="Contact"><h2>Contact</h2></section>
-  </main>
+<nav class="ruler" aria-hidden="true">
+  <div class="scale" id="scale"></div>
+  <div class="marker" id="marker"><span id="marker-num">000%</span></div>
+</nav>
+<div id="vlabels"></div>
+<nav class="hud" aria-label="Current section">
+  <div class="past" id="past"></div>
+  <div class="now" id="now" aria-live="polite"></div>
+</nav>
+<nav class="next" id="next" aria-label="Upcoming sections"></nav>
+
+<main>
+  <section id="crafting" data-label="Crafting Apps"><h2>Seven apps. One craft.</h2><p>Scroll slowly and watch the right edge. Each section's name rides up the ruler, then its letters swing into the header.</p></section>
+  <section id="lineup" data-label="Lineup"><h2>The lineup</h2><p>The previous header shrinks into the stack above the new one.</p></section>
+  <section id="principles" data-label="Principles"><h2>Built the hard way.</h2><p>Upcoming sections are listed small in the bottom right corner.</p></section>
+  <section id="get-started" data-label="Get Started"><h2>Build it with us.</h2><p>The blue marker on the ruler shows how far down the page you are.</p></section>
+</main>
 
 <script>
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const sections = [...document.querySelectorAll('section[data-label]')];
-  const ruler = document.querySelector('.ruler');
-  const current = document.querySelector('.current');
+  const scale = document.getElementById('scale');
+  const marker = document.getElementById('marker');
+  const markerNum = document.getElementById('marker-num');
+  const pastEl = document.getElementById('past');
+  const nowEl = document.getElementById('now');
+  const nextEl = document.getElementById('next');
+  const vWrap = document.getElementById('vlabels');
 
-  const links = sections.map(s => {
+  const letters = (el, text) => {
+    el.textContent = '';
+    [...text].forEach(ch => {
+      const s = document.createElement('span');
+      s.textContent = ch === ' ' ? ' ' : ch;
+      el.appendChild(s);
+    });
+  };
+  const link = (s, cls) => {
     const a = document.createElement('a');
-    a.href = '#' + s.id;
-    a.textContent = s.dataset.label;
-    ruler.appendChild(a);
+    a.href = '#' + s.id; a.textContent = s.dataset.label;
+    if (cls) a.className = cls;
+    return a;
+  };
+
+  // One vertical label per section after the first
+  const vlabels = sections.map((s, i) => {
+    if (i === 0) return null;
+    const a = link(s, 'vlabel');
+    letters(a, s.dataset.label);
+    a.hidden = true;
+    vWrap.appendChild(a);
     return a;
   });
 
-  let activeId = null;
-  function setActive(id) {
-    if (id === activeId) return;
-    activeId = id;
-    links.forEach(a => a.classList.toggle('active', a.hash === '#' + id));
-    const label = sections.find(s => s.id === id).dataset.label;
-    current.innerHTML = '';
-    const span = document.createElement('span');
-    span.textContent = label;
-    current.appendChild(span);
+  function buildScale() {
+    const docH = document.documentElement.scrollHeight;
+    scale.style.height = docH + 'px';
+    scale.querySelectorAll('.mark').forEach(m => m.remove());
+    for (let p = 0; p <= 100; p += 5) {
+      const m = document.createElement('div');
+      m.className = 'mark';
+      m.style.top = (p / 100 * docH) + 'px';
+      m.innerHTML = `<b>${p}</b><i></i>`;
+      scale.appendChild(m);
+    }
   }
 
-  const io = new IntersectionObserver(entries => {
-    entries.forEach(e => { if (e.isIntersecting) setActive(e.target.id); });
-  }, { rootMargin: '-45% 0px -54% 0px' });
-  sections.forEach(s => io.observe(s));
+  let active = -1;
+  function renderStack(i) {
+    pastEl.textContent = '';
+    sections.slice(0, i).forEach(s => pastEl.appendChild(link(s)));
+    letters(nowEl, sections[i].dataset.label);
+    nextEl.textContent = '';
+    sections.slice(i + 1).forEach(s => nextEl.appendChild(link(s)));
+  }
 
-  ruler.addEventListener('click', e => {
-    const a = e.target.closest('a');
+  function flyIn(i, fromLabel) {
+    const starts = [...fromLabel.children].map(c => c.getBoundingClientRect());
+    renderStack(i);
+    if (reduce) return;
+    nowEl.classList.add('landing');
+    const ends = [...nowEl.children].map(c => c.getBoundingClientRect());
+    const k = parseFloat(getComputedStyle(fromLabel).fontSize) / parseFloat(getComputedStyle(nowEl).fontSize);
+    const n = ends.length;
+    let done = 0;
+    ends.forEach((e, j) => {
+      const s = starts[j];
+      const f = document.createElement('span');
+      f.className = 'fly';
+      f.textContent = nowEl.children[j].textContent;
+      document.body.appendChild(f);
+      const w = e.width, h = e.height;
+      const sx = s.left + s.width / 2 - w / 2, sy = s.top + s.height / 2 - h / 2;
+      const ex = e.left, ey = e.top;
+      const mx = Math.max(sx, ex) + 24, my = sy + (ey - sy) * 0.65;
+      const anim = f.animate([
+        { transform: `translate(${sx}px, ${sy}px) rotate(-90deg) scale(${k})`, opacity: .6 },
+        { transform: `translate(${mx}px, ${my}px) rotate(-40deg) scale(${(1 + k) / 2})`, opacity: 1, offset: .55 },
+        { transform: `translate(${ex}px, ${ey}px) rotate(0deg) scale(1)`, opacity: 1 }
+      ], { duration: 750, delay: (n - 1 - j) * 45, easing: 'cubic-bezier(.3,.7,.2,1)', fill: 'both' });
+      anim.onfinish = () => {
+        f.remove();
+        if (++done === n) nowEl.classList.remove('landing');
+      };
+    });
+  }
+
+  function setActive(i) {
+    if (i === active) return;
+    const prev = active;
+    active = i;
+    if (prev >= 0 && i > prev && vlabels[i] && !vlabels[i].hidden) flyIn(i, vlabels[i]);
+    else renderStack(i);
+  }
+
+  function update() {
+    const vh = innerHeight;
+    const docH = document.documentElement.scrollHeight;
+    const max = Math.max(1, docH - vh);
+    const p = Math.min(1, Math.max(0, scrollY / max));
+    scale.style.transform = `translateY(${-scrollY}px)`;
+    marker.style.transform = `translateY(${p * (vh - 1)}px)`;
+    markerNum.textContent = String(Math.round(p * 100)).padStart(3, '0') + '%';
+
+    let idx = 0;
+    sections.forEach((s, i) => { if (s.getBoundingClientRect().top <= vh * 0.4) idx = i; });
+    setActive(idx);
+
+    // Place each upcoming label beside the ruler at its section's top edge
+    vlabels.forEach((v, i) => {
+      if (!v) return;
+      const top = sections[i].getBoundingClientRect().top;
+      const show = i > idx && top < vh - 20;
+      v.hidden = !show;
+      if (show) v.style.top = Math.max(vh * 0.4, top + 16) + 'px';
+    });
+  }
+
+  let ticking = false;
+  addEventListener('scroll', () => {
+    if (!ticking) { ticking = true; requestAnimationFrame(() => { ticking = false; update(); }); }
+  }, { passive: true });
+  addEventListener('resize', () => { buildScale(); update(); });
+
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a[href^="#"]');
     if (!a) return;
     e.preventDefault();
-    document.querySelector(a.hash).scrollIntoView({ behavior: 'smooth' });
+    document.querySelector(a.hash).scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
   });
+
+  buildScale();
+  update();
+  if (document.fonts) document.fonts.ready.then(() => { buildScale(); update(); });
 
   const root = document.documentElement;
   const btn = document.getElementById('theme-toggle');
