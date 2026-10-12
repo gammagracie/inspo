@@ -15,6 +15,14 @@ Functionality and styling to reuse.
 - What: Image stays pinned while caption cards scroll past. Each card outlines one detail with a box, dims the rest, and zooms the image into it. Tapping any box jumps to its card. The last card shows all boxes at once.
 - Demo: https://gammagracie.github.io/inspo/look-close-overlay.html ([source](look-close-overlay.html))
 - How: `IntersectionObserver` picks the active card. Boxes are buttons positioned in percentages over the image, so they scale with it. Zoom is one `translate() scale()` on a wrapper holding both the image and boxes, clamped so no empty edges show. Box borders divide by the scale so they stay the same thickness. The dimming is a large `box-shadow` on the active box. Dark mode and toggle match demo 1.
+- Oct 12, 2026: Ocean variant added, see 2b.
+
+## 2b. Look-close ocean (photo variant with rounded text callouts)
+
+- Source: https://www.nytimes.com/interactive/2026/10/08/technology/ai-generated-image-look-close.html
+- What: Same scroll and zoom as 2, on an underwater photo. No side cards. Scroll steps are invisible, and each step opens a rounded callout with placeholder text next to its box. The last step shows all five boxes with number tags.
+- Demo: https://gammagracie.github.io/inspo/look-close-ocean.html ([source](look-close-ocean.html), photo in [images/](images/look-close-ocean.jpg))
+- How: Photo and boxes sit in one pinned frame sized to 88% of screen height. Empty full-screen steps overlap the pin and drive an `IntersectionObserver`. Callouts live inside each box and are scaled by `1 / zoom` so text stays the same size. They fade and slide in after the zoom lands.
 
 ## 3. Studio home spin (3D card over a giant wordmark)
 

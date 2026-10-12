@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Look Close Ocean</title>
+<style>
+  /* Layout: photo pinned center screen, invisible scroll steps pass over it. Each step zooms to a region and opens a rounded callout. */
+  :root {
+    --bg: #eef1f4;
+    --fg: #121821;
+    --muted: #5f6b78;
+    --line: #cfd6de;
+    --callout: rgba(255,255,255,.9);
+    --callout-fg: #121821;
+    --box: #ffffff;
+    --ease: cubic-bezier(.2,.8,.2,1);
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#070b11; --fg:#e6edf5; --muted:#8a97a6; --line:#223040; --callout:rgba(10,18,28,.82); --callout-fg:#e6edf5; color-scheme: dark } }
+  :root[data-theme="dark"] { --bg:#070b11; --fg:#e6edf5; --muted:#8a97a6; --line:#223040; --callout:rgba(10,18,28,.82); --callout-fg:#e6edf5; color-scheme: dark }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font: 17px/1.55 Georgia, "Times New Roman", serif;
+    padding-inline: 16px;
+  }
+  header { max-width: 680px; margin: 0 auto; padding-block: 72px 24px; }
+  header h1 { font-size: clamp(30px, 5vw, 48px); line-height: 1.1; margin: 0 0 12px; text-wrap: balance; }
+  header p { color: var(--muted); margin: 0; }
+  footer { max-width: 680px; margin: 0 auto; padding-block: 48px 96px; color: var(--muted); }
+
+  .pin {
+    position: sticky; top: 0; height: 100svh;
+    display: grid; place-items: center;
+  }
+  .frame {
+    position: relative;
+    width: min(100%, calc(88svh * 1200 / 1796));
+    aspect-ratio: 1200 / 1796; max-width: 100%;
+    overflow: hidden; border-radius: 14px; background: #0b1520;
+  }
+  .stage {
+    position: absolute; inset: 0;
+    transform-origin: 0 0;
+    transition: transform 1s var(--ease);
+    --s: 1;
+  }
+  .stage img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+  .box {
+    position: absolute;
+    border: calc(2px / var(--s)) solid var(--box);
+    border-radius: calc(12px / var(--s));
+    background: transparent; padding: 0; cursor: pointer;
+    opacity: 0; pointer-events: none;
+    box-shadow: 0 0 0 9999px rgba(0,0,0,0);
+    transition: opacity .5s var(--ease), box-shadow .7s var(--ease);
+  }
+  .box .tag {
+    position: absolute; left: 0; top: 0;
+    transform: translate(-40%, -40%) scale(calc(1 / var(--s))); transform-origin: 50% 50%;
+    width: 24px; height: 24px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: var(--box); color: #121821;
+    font: 700 12px/1 system-ui, sans-serif;
+    opacity: 0; transition: opacity .4s var(--ease);
+  }
+  .callout {
+    position: absolute; width: 240px;
+    top: calc(100% + 10px / var(--s)); left: 0;
+    transform-origin: 0 0;
+    transform: scale(calc(1 / var(--s))) translateY(12px);
+    background: var(--callout); color: var(--callout-fg);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    border-radius: 14px; padding: 12px 14px;
+    text-align: left;
+    font: 14px/1.45 system-ui, sans-serif;
+    opacity: 0;
+    transition: opacity .45s var(--ease), transform .6s var(--ease);
+  }
+  .callout b { display: block; font: 700 11px/1 system-ui, sans-serif; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 6px; opacity: .7; }
+  .box[data-x="right"] .callout { left: auto; right: 0; transform-origin: 100% 0; }
+  .box[data-y="above"] .callout { top: auto; bottom: calc(100% + 10px / var(--s)); transform-origin: 0 100%; transform: scale(calc(1 / var(--s))) translateY(-12px); }
+  .box[data-y="above"][data-x="right"] .callout { transform-origin: 100% 100%; }
+
+  .stage:not(.overview) .box { opacity: .35; pointer-events: auto; }
+  .stage.show-all .box { opacity: 1; }
+  .stage.show-all .tag { opacity: 1; }
+  .box.active { opacity: 1 !important; box-shadow: 0 0 0 9999px rgba(0,0,0,.5); }
+  .box.active .callout { opacity: 1; transform: scale(calc(1 / var(--s))); transition-delay: .35s; }
+  .box:focus-visible { outline: calc(2px / var(--s)) solid #7fc4ff; outline-offset: calc(3px / var(--s)); }
+
+  .steps { margin-top: -100svh; position: relative; pointer-events: none; }
+  .step { height: 100svh; }
+
+  .credit { max-width: 680px; margin: 0 auto; font: 12px/1.4 system-ui, sans-serif; color: var(--muted); padding-top: 12px; }
+
+  .theme-toggle {
+    position: absolute; top: calc(16px + env(safe-area-inset-top, 0px)); right: 16px; z-index: 5;
+    font: 600 11px/1 system-ui, sans-serif; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--fg); background: var(--bg); border: 1px solid var(--line);
+    padding: 8px 12px; border-radius: 999px; cursor: pointer;
+  }
+  .theme-toggle:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+
+  @media (max-width: 420px) { .callout { width: 200px; font-size: 13px; } }
+  @media (prefers-reduced-motion: reduce) {
+    .stage, .box, .callout, .tag { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<button class="theme-toggle" id="theme-toggle" type="button">Dark</button>
+
+<header>
+  <h1>Look closer at the shallows</h1>
+  <p>Scroll to move through each detail, or tap a box on the photo to jump to it.</p>
+</header>
+
+<section class="scrolly">
+<div class="pin">
+  <div class="frame">
+    <div class="stage overview" id="stage">
+      <img src="images/look-close-ocean.jpg" width="1200" height="1796" alt="Underwater view looking up at a rippled surface, with light breaking through over dark rock covered in caustic patterns">
+      <button class="box" data-step="1" data-y="below" data-x="left" style="left:18%;top:3%;width:26%;height:8%" aria-label="Detail 1">
+        <span class="tag">1</span>
+        <span class="callout"><b>Detail 1</b>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore.</span>
+      </button>
+      <button class="box" data-step="2" data-y="below" data-x="right" style="left:50%;top:24%;width:44%;height:14%" aria-label="Detail 2">
+        <span class="tag">2</span>
+        <span class="callout"><b>Detail 2</b>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo.</span>
+      </button>
+      <button class="box" data-step="3" data-y="below" data-x="left" style="left:25%;top:44%;width:40%;height:11%" aria-label="Detail 3">
+        <span class="tag">3</span>
+        <span class="callout"><b>Detail 3</b>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla.</span>
+      </button>
+      <button class="box" data-step="4" data-y="below" data-x="left" style="left:28%;top:56%;width:36%;height:14%" aria-label="Detail 4">
+        <span class="tag">4</span>
+        <span class="callout"><b>Detail 4</b>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit.</span>
+      </button>
+      <button class="box" data-step="5" data-y="above" data-x="left" style="left:8%;top:78%;width:40%;height:16%" aria-label="Detail 5">
+        <span class="tag">5</span>
+        <span class="callout"><b>Detail 5</b>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur.</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="steps" aria-hidden="true">
+  <div class="step" data-step="0"></div>
+  <div class="step" data-step="1"></div>
+  <div class="step" data-step="2"></div>
+  <div class="step" data-step="3"></div>
+  <div class="step" data-step="4"></div>
+  <div class="step" data-step="5"></div>
+  <div class="step" data-step="all"></div>
+</div>
+</section>
+
+<p class="credit">Placeholder text throughout.</p>
+<footer>End of demo.</footer>
+
+<script>
+  const stage = document.getElementById('stage');
+  const boxes = [...stage.querySelectorAll('.box')];
+  const steps = [...document.querySelectorAll('.step')];
+
+  function zoomTo(box) {
+    if (!box) { stage.style.transform = ''; stage.style.setProperty('--s', 1); return; }
+    const x = parseFloat(box.style.left) / 100, y = parseFloat(box.style.top) / 100;
+    const w = parseFloat(box.style.width) / 100, h = parseFloat(box.style.height) / 100;
+    const s = Math.min(2.4, 0.5 / Math.max(w, h));
+    const clamp = (v) => Math.min(0, Math.max(1 - s, v));
+    const tx = clamp(0.5 - (x + w / 2) * s), ty = clamp(0.5 - (y + h / 2) * s);
+    stage.style.transform = `translate(${tx * 100}%, ${ty * 100}%) scale(${s})`;
+    stage.style.setProperty('--s', s);
+  }
+
+  let current = null;
+  function activate(id) {
+    if (id === current) return;
+    current = id;
+    stage.classList.toggle('show-all', id === 'all');
+    stage.classList.toggle('overview', id === '0');
+    const box = boxes.find(b => b.dataset.step === id);
+    boxes.forEach(b => b.classList.toggle('active', b === box));
+    zoomTo(box);
+  }
+
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) activate(e.target.dataset.step); });
+  }, { rootMargin: '-50% 0px -49% 0px' });
+  steps.forEach(st => io.observe(st));
+
+  boxes.forEach(b => b.addEventListener('click', () => {
+    const step = steps.find(st => st.dataset.step === b.dataset.step);
+    activate(b.dataset.step);
+    step.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }));
+
+  activate('0');
+
+  const root = document.documentElement;
+  const btn = document.getElementById('theme-toggle');
+  const isDark = () => root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  const sync = () => { btn.textContent = isDark() ? 'Light' : 'Dark'; btn.setAttribute('aria-label', 'Switch to ' + btn.textContent.toLowerCase() + ' mode'); };
+  try { const t = localStorage.getItem('theme'); if (t) root.dataset.theme = t; } catch (e) {}
+  sync();
+  btn.addEventListener('click', () => {
+    root.dataset.theme = isDark() ? 'light' : 'dark';
+    try { localStorage.setItem('theme', root.dataset.theme); } catch (e) {}
+    sync();
+  });
+</script>
+</body>
+</html>
