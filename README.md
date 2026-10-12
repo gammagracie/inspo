@@ -22,6 +22,7 @@ Functionality and styling to reuse.
 - What: Giant wordmark with a card spinning on its Y axis in front of it. Each time the card is edge-on it swaps to the next project and the page color changes to match. About and services sit on the same live color, then a recent works grid, a scrolling marquee and the footer.
 - Demo: https://gammagracie.github.io/inspo/studio-home-spin.html ([source](studio-home-spin.html))
 - How: Two Web Animations per step, rotateY 0 to 90 then -90 to 0, with the art and a `--live` color variable swapped in between. Card art is generated from shapes and color, no images.
+- Oct 12, 2026: Sizes matched to glekel.com screenshots. All type, spacing, wordmark (64vw), card (46.5vw, 4:3) and grid use `vw` units so proportions hold at any width.
 
 ## 4. Studio projects hover (color-changing list with cursor card)
 
@@ -29,3 +30,4 @@ Functionality and styling to reuse.
 - What: Category filter tabs over a big list of project names with category and year on the right. Hovering a name turns the whole page that project's color, turns the name white and shows a tilted card that follows the cursor. Filtering re-renders the list with a stagger and shows year only.
 - Demo: https://gammagracie.github.io/inspo/studio-projects-hover.html ([source](studio-projects-hover.html))
 - How: One fixed card moved every frame with a lerp toward the pointer. Its tilt comes from horizontal speed, clamped to ±16 degrees. Body background transitions to the project color on hover. Touch screens skip the card.
+- Oct 12, 2026: Sizes matched to glekel.com screenshots. Names 4.2vw, filters 1.3vw, square cursor card 35.5vw, header and footer shared with the home build. All in `vw` units.
