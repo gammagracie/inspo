@@ -37,5 +37,6 @@ Functionality and styling to reuse.
 - Source: https://www.glekel.com/projects
 - What: Category filter tabs over a big list of project names with category and year on the right. Hovering a name turns the whole page that project's color, turns the name white and shows a tilted card that follows the cursor. Filtering re-renders the list with a stagger and shows year only.
 - Demo: https://gammagracie.github.io/inspo/studio-projects-hover.html ([source](studio-projects-hover.html))
-- How: One fixed card moved every frame with a lerp toward the pointer. Its tilt comes from horizontal speed, clamped to ±16 degrees. Body background transitions to the project color on hover. Touch screens skip the card.
+- How: One fixed card moved every frame with a lerp toward the pointer. Its tilt follows its height on screen, about -7 degrees near the top to +19 near the bottom, so it rotates progressively as it glides down the list. Body background transitions to the project color on hover. Touch screens skip the card.
 - Oct 12, 2026: Sizes matched to glekel.com screenshots. Names 4.2vw, filters 1.3vw, square cursor card 35.5vw, header and footer shared with the home build. All in `vw` units.
+- Oct 12, 2026: Progressive hover rotation matched to a screen recording of the original. Tilt = (card height on screen − 50%) × 50 degrees, eased with the card's movement.

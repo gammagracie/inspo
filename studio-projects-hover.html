@@ -194,8 +194,8 @@
     filters.appendChild(b);
   });
 
-  // Cursor-following card with velocity tilt
-  let mx = innerWidth / 2, my = innerHeight / 2, x = mx, y = my, rot = 0, hot = null;
+  // Cursor-following card. Tilt grows with height on screen: about -7deg near the top, +19deg near the bottom
+  let mx = innerWidth / 2, my = innerHeight / 2, x = mx, y = my, hot = null;
   addEventListener('pointermove', e => { mx = e.clientX; my = e.clientY; });
   function activate(p, li) {
     if (hot) hot.classList.remove('hot');
@@ -212,12 +212,10 @@
   }
   function loop() {
     const k = reduce ? 1 : 0.14;
-    const vx = (mx - x) * k;
-    x += vx; y += (my - y) * k;
-    const target = Math.max(-16, Math.min(16, vx * 0.9)) - 6;
-    rot += (target - rot) * 0.12;
-    const w = card.offsetWidth, h = card.offsetHeight;
-    card.style.transform = `translate(${x + 40}px, ${y - h / 2}px) rotate(${reduce ? -6 : rot}deg)`;
+    x += (mx - x) * k; y += (my - y) * k;
+    const rot = (y / innerHeight - 0.5) * 50;
+    const h = card.offsetHeight;
+    card.style.transform = `translate(${x + 40}px, ${y - h / 2}px) rotate(${rot}deg)`;
     requestAnimationFrame(loop);
   }
 
