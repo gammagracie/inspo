@@ -40,3 +40,10 @@ Functionality and styling to reuse.
 - How: One fixed card moved every frame with a lerp toward the pointer. Its tilt follows its height on screen, about -7 degrees near the top to +19 near the bottom, so it rotates progressively as it glides down the list. Body background transitions to the project color on hover. Touch screens skip the card.
 - Oct 12, 2026: Sizes matched to glekel.com screenshots. Names 4.2vw, filters 1.3vw, square cursor card 35.5vw, header and footer shared with the home build. All in `vw` units.
 - Oct 12, 2026: Progressive hover rotation matched to a screen recording of the original. Tilt = (card height on screen − 50%) × 50 degrees, eased with the card's movement.
+
+## 5. Ten quiet serifs (type specimen with live tester)
+
+- Source: https://shambhaviojha.medium.com/10-beautiful-serifs-on-google-fonts-you-probably-havent-seen-before-97a56efa0000
+- What: Specimen cards for Viaoda Libre, Alice, Averia Serif Libre, Caudex, Domine, Gilda Display, Kavoon, Literata, Prata and Solway. Each card shows the name, a big Ag, the alphabet, a sample line, a paragraph, available weights and a Google Fonts link. A sticky tester bar changes the sample text, size and italic for every card at once.
+- Demo: https://gammagracie.github.io/inspo/serif-specimens.html ([source](serif-specimens.html))
+- How: One Google Fonts request loads all ten families. Cards are built from a small data array. The tester writes into each sample line and sets a `--size` variable. Dark mode follows the system setting, with a toggle.
