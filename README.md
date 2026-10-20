@@ -47,3 +47,14 @@ Functionality and styling to reuse.
 - What: Specimen cards for Viaoda Libre, Alice, Averia Serif Libre, Caudex, Domine, Gilda Display, Kavoon, Literata, Prata and Solway. Each card shows the name, a big Ag, the alphabet, a sample line, a paragraph, available weights and a Google Fonts link. A sticky tester bar changes the sample text, size and italic for every card at once.
 - Demo: https://gammagracie.github.io/inspo/serif-specimens.html ([source](serif-specimens.html))
 - How: One Google Fonts request loads all ten families. Cards are built from a small data array. The tester writes into each sample line and sets a `--size` variable. Dark mode follows the system setting, with a toggle.
+
+## 6. Ten quiet serifs cards (article layout variant)
+
+- Source: https://shambhaviojha.medium.com/10-beautiful-serifs-on-google-fonts-you-probably-havent-seen-before-97a56efa0000
+- What: Same ten fonts laid out like the article. Black background, three staggered columns of colored cards. Each card is set in its own font with the name and style count on top, a description, and the style list on the right in each weight.
+- Demo: https://gammagracie.github.io/inspo/serif-cards.html ([source](serif-cards.html))
+- Note: Descriptions for Prata, Literata, Viaoda Libre, Solway and Alice were cut off or missing in the reference screenshot, so they were written for this demo. Those cards are marked with a dot.
+
+## References
+
+Screen recordings and screenshots of the original pages live in [references/](references/README.md).
