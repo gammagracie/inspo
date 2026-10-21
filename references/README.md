@@ -9,6 +9,7 @@ Captures of the original pages each demo was built from, kept in case the live l
 | Studio Home Spin | https://www.glekel.com/ | `glekel/home-recording.mp4` | Oct 11, 2026 |
 | Studio Projects Hover | https://www.glekel.com/projects | `glekel/projects-recording.mp4` | Oct 11, 2026 |
 | Gallery Window Site | https://deitch.com/ | Nothing saved. Original pages show artists' work | |
+| ASCII Flow Field | App screen, no public link | `ascii-flow/screen-recording.mov` | Oct 15, 2026 |
 | Ten Quiet Serifs | https://shambhaviojha.medium.com/10-beautiful-serifs-on-google-fonts-you-probably-havent-seen-before-97a56efa0000 | `medium-serifs/article-screenshot.webp` | Oct 20, 2026 |
 
 Full saved pages (.html, .webarchive or PDF) still need to be added. These sites are blocked from the cloud build environment, so they have to be saved from a browser and uploaded.

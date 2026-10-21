@@ -62,6 +62,13 @@ Functionality and styling to reuse.
 - Demo: https://gammagracie.github.io/inspo/deitch/ ([source](deitch/))
 - How: The bevel is a 26px gradient tile used as `border-image` 8 round, so every edge reads as a tube. Grid cells draw only their right and bottom borders, and the grid is 4px wider than the window so the last edge hides. Type is in `rem` with the root size stepping from 40% to 62.5% by width, like the original. Nav icons animate on hover and on the current section. Artwork, names and copy are generated placeholders, not the gallery's.
 
+## 8. ASCII flow field (flowing colored text background)
+
+- Source: Screen recording of an app's empty-state background, Oct 15, 2026 ([recording](references/ascii-flow/screen-recording.mov))
+- What: Full-screen grid of random letters and numbers. Slow waves drift across it and light the characters up in blue and teal. Troughs go empty, edges break up like dithering, and a few characters swap every frame so it shimmers.
+- Demo: https://gammagracie.github.io/inspo/ascii-flow.html ([source](ascii-flow.html))
+- How: One canvas. Each frame samples a cheap noise field (three domain-warped sine waves) per cell. Value below a per-cell random threshold skips the cell, which makes the dithered edges. Wave crests pick a brightness level and a blue or teal hue from a second, slower field. Glyphs are pre-drawn into an atlas (character x brightness x hue) and copied with `drawImage`, capped at 30fps. Dark mode follows the system setting, with a toggle. Respects `prefers-reduced-motion` with a still frame.
+
 ## References
 
 Screen recordings and screenshots of the original pages live in [references/](references/README.md).
