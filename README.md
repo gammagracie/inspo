@@ -69,6 +69,13 @@ Functionality and styling to reuse.
 - Demo: https://gammagracie.github.io/inspo/ascii-flow.html ([source](ascii-flow.html))
 - How: One canvas. Each frame samples a cheap noise field (three domain-warped sine waves) per cell. Value below a per-cell random threshold skips the cell, which makes the dithered edges. Wave crests pick a brightness level and a blue or teal hue from a second, slower field. Glyphs are pre-drawn into an atlas (character x brightness x hue) and copied with `drawImage`, capped at 30fps. Dark mode follows the system setting, with a toggle. Respects `prefers-reduced-motion` with a still frame.
 
+## 9. Gallery hero carousel (full-screen slides with segment nav)
+
+- Source: https://gagosian.com/
+- What: Full-screen hero under a thin white nav bar. Each slide is one exhibition with a centered caption (status line, condensed artist name, serif title, address, white "Learn More" button) and the wordmark top left. Slides push sideways. A row of thin lines along the bottom shows one segment per slide, the current one solid white. Click a segment, drag, swipe or use the arrow keys.
+- Demo: https://gammagracie.github.io/inspo/gallery-hero-carousel.html ([source](gallery-hero-carousel.html))
+- How: One flex track moved with `translateX` and an eased transform transition. The first and last slides are cloned at the ends, and after landing on a clone the track jumps to the real slide with no transition, so it loops forward forever. Drag follows the pointer and changes slide past 15% of the width. Autoplay every 6s, paused while the mouse is over the hero. The 6s timing is a guess, the recording did not show autoplay clearly. Art, names and addresses are generated placeholders, not the gallery's.
+
 ## References
 
 Screen recordings and screenshots of the original pages live in [references/](references/README.md).
