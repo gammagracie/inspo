@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ASCII Flow Field</title>
+<style>
+  /* Layout: full-screen canvas of characters, small centered card on top to show it as a background */
+  :root {
+    --bg: #1b1b1b;
+    --ink: #ecebef;
+    --muted: #8d8a93;
+    --card: rgba(27,27,27,.86);
+    --line: #34323a;
+    --ui: system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  }
+  :root[data-theme="light"] { --bg:#f4f3f0; --ink:#17161a; --muted:#6f6c75; --card:rgba(244,243,240,.86); --line:#dddad3; color-scheme: light }
+  @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) { --bg:#f4f3f0; --ink:#17161a; --muted:#6f6c75; --card:rgba(244,243,240,.86); --line:#dddad3; color-scheme: light } }
+  html { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--ink); font: 14px/1.4 var(--ui); overflow: hidden; }
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  .card { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(340px, calc(100% - 32px)); background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; backdrop-filter: blur(2px); }
+  .card h1 { font-size: 15px; margin: 0 0 4px; font-weight: 600; }
+  .card p { margin: 0; color: var(--muted); font-size: 13px; }
+  #theme { position: fixed; top: 16px; right: 16px; font: 600 12px var(--ui); color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; cursor: pointer; }
+</style>
+</head>
+<body>
+<canvas id="c" aria-hidden="true"></canvas>
+<div class="card">
+  <h1>ASCII flow field</h1>
+  <p>Random characters on a grid. Slow noise waves light them up in blue as they drift past.</p>
+</div>
+<button type="button" id="theme">Light</button>
+<script>
+  const root = document.documentElement;
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  const CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const FONT = 10, CW = 6, CH = 12;   // css px: glyph size, cell width, cell height
+  const LEVELS = 8;                   // brightness steps baked into the atlas
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let cols, rows, grid, dith, atlas, dpr;
+
+  const isLight = () => root.dataset.theme ? root.dataset.theme === 'light' : matchMedia('(prefers-color-scheme: light)').matches;
+
+  // Palette: faint grey for idle cells, blue to teal for lit cells
+  function palette() {
+    return isLight()
+      ? { idle: [120,118,126], a: [40,92,200], b: [20,140,150], bg: getComputedStyle(root).getPropertyValue('--bg') }
+      : { idle: [90,90,96],    a: [70,135,230], b: [60,190,200], bg: getComputedStyle(root).getPropertyValue('--bg') };
+  }
+
+  // Glyph atlas: rows = hue (0 idle, 1 blue, 2 teal), columns = char x brightness level
+  function buildAtlas() {
+    const p = palette();
+    atlas = document.createElement('canvas');
+    atlas.width = CHARS.length * LEVELS * CW * dpr;
+    atlas.height = 3 * CH * dpr;
+    const a = atlas.getContext('2d');
+    a.scale(dpr, dpr);
+    a.font = `${FONT}px ui-monospace, "SF Mono", Menlo, Consolas, monospace`;
+    a.textBaseline = 'middle';
+    [p.idle, p.a, p.b].forEach((rgb, h) => {
+      for (let l = 0; l < LEVELS; l++) {
+        const alpha = h === 0 ? 0.05 + l * 0.02 : 0.18 + (l / (LEVELS - 1)) * 0.82;
+        a.fillStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${alpha})`;
+        for (let i = 0; i < CHARS.length; i++) a.fillText(CHARS[i], (i * LEVELS + l) * CW, h * CH + CH / 2);
+      }
+    });
+  }
+
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = innerWidth * dpr;
+    canvas.height = innerHeight * dpr;
+    cols = Math.ceil(innerWidth / CW);
+    rows = Math.ceil(innerHeight / CH);
+    grid = new Uint8Array(cols * rows).map(() => Math.random() * CHARS.length | 0);
+    dith = new Float32Array(cols * rows).map(() => Math.random());
+    buildAtlas();
+  }
+
+  // Cheap smooth noise: layered, domain-warped sine waves
+  function field(x, y, t) {
+    const wx = x + Math.sin(y * 0.9 + t * 0.6) * 0.8;
+    const wy = y + Math.cos(x * 0.7 - t * 0.5) * 0.8;
+    return (Math.sin(wx * 1.3 + t) + Math.sin(wy * 1.7 - t * 0.8) + Math.sin((wx + wy) * 0.9 + t * 0.4)) / 3;
+  }
+
+  let last = 0;
+  function frame(now) {
+    if (!reduce) requestAnimationFrame(frame);
+    if (now - last < 33) return;      // ~30fps is plenty for this look
+    last = now;
+    const t = now * 0.00035;
+    const s = CW * dpr, h = CH * dpr;
+    ctx.fillStyle = palette().bg;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Swap a few characters each frame so the field shimmers
+    for (let k = 0; k < cols * rows * 0.01; k++) grid[Math.random() * grid.length | 0] = Math.random() * CHARS.length | 0;
+
+    for (let r = 0; r < rows; r++) {
+      const ny = r * CH / 170;
+      for (let c = 0; c < cols; c++) {
+        const nx = c * CW / 170;
+        const v = field(nx, ny, t);               // -1..1
+        const i = (v + 0.1) / 1.4;                // 0..1 where the wave is up
+        if (i <= dith[r * cols + c]) continue;    // dithered edges, empty troughs
+        const lit = (v - 0.35) / 0.65;            // only the crests light up
+        let hue = 0, lvl;
+        if (lit > 0) {
+          hue = field(nx * 0.5 + 9, ny * 0.5 - 4, t * 0.5) > 0.5 ? 2 : 1;
+          lvl = Math.min(LEVELS - 1, lit * LEVELS | 0);
+        } else {
+          lvl = Math.min(LEVELS - 1, i * LEVELS | 0);
+        }
+        const ch = grid[r * cols + c];
+        ctx.drawImage(atlas, (ch * LEVELS + lvl) * s, hue * h, s, h, c * s, r * h, s, h);
+      }
+    }
+  }
+
+  const btn = document.getElementById('theme');
+  try { const t = localStorage.getItem('theme'); if (t) root.dataset.theme = t; } catch (e) {}
+  const label = () => { btn.textContent = isLight() ? 'Dark' : 'Light'; };
+  btn.addEventListener('click', () => {
+    root.dataset.theme = isLight() ? 'dark' : 'light';
+    try { localStorage.setItem('theme', root.dataset.theme); } catch (e) {}
+    label(); buildAtlas(); if (reduce) frame(performance.now() + 1000);
+  });
+
+  addEventListener('resize', () => { resize(); if (reduce) frame(performance.now() + 1000); });
+  resize(); label();
+  requestAnimationFrame(frame);
+</script>
+</body>
+</html>
