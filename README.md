@@ -77,6 +77,13 @@ Functionality and styling to reuse.
 - Demo: https://gammagracie.github.io/inspo/gallery-hero-carousel.html ([source](gallery-hero-carousel.html))
 - How: One flex track moved with `translateX` and an eased transform transition. The first and last slides are cloned at the ends, and after landing on a clone the track jumps to the real slide with no transition, so it loops forward forever. Drag follows the pointer and changes slide past 15% of the width. Autoplay every 6s, paused while the mouse is over the hero. The 6s timing is a guess, the recording did not show autoplay clearly. Art, names and addresses are generated placeholders, not the gallery's.
 
+## 7. Growth curve scroll (line draw, dashboard tilt, stat curve)
+
+- Source: https://www.servicetitan.com/features/pro/marketing
+- What: Four scroll effects. A glowing blue line draws across a dark panel and ends at a "Drive revenue" label. A tilted dashboard flattens toward you as it scrolls in. A pinned growth curve draws upward and each stat (dot, leader line, number, label) pops in as the line reaches it. Feature rows slide in from the left.
+- Demo: https://gammagracie.github.io/inspo/growth-curve-scroll.html ([source](growth-curve-scroll.html))
+- How: Pinned sections use `position: sticky` inside a tall wrapper. Scroll progress through the wrapper sets `stroke-dashoffset` on the path and a blurred copy for the glow. Stat positions come from `getPointAtLength`. The dashboard tilt maps scroll position to `rotateY`, `rotateX` and `scale`. Placeholder content and mock screenshots only.
+
 ## References
 
 Screen recordings and screenshots of the original pages live in [references/](references/README.md).
