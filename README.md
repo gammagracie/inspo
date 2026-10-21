@@ -68,6 +68,7 @@ Functionality and styling to reuse.
 - What: Full-screen grid of random letters and numbers. Slow waves drift across it and light the characters up in blue and teal. Troughs go empty, edges break up like dithering, and a few characters swap every frame so it shimmers.
 - Demo: https://gammagracie.github.io/inspo/ascii-flow.html ([source](ascii-flow.html))
 - How: One canvas. Each frame samples a cheap noise field (three domain-warped sine waves) per cell. Value below a per-cell random threshold skips the cell, which makes the dithered edges. Wave crests pick a brightness level and a blue or teal hue from a second, slower field. Glyphs are pre-drawn into an atlas (character x brightness x hue) and copied with `drawImage`, capped at 30fps. Dark mode follows the system setting, with a toggle. Respects `prefers-reduced-motion` with a still frame.
+- Oct 21, 2026: Pointer ripples added, matched to the recording. Moving the pointer drops pokes along its path into a 12px wave grid (two-buffer wave equation, 0.98 damping, two steps per frame). Ring height above a floor adds to the noise value, so rings light up as blue bands with dark gaps and fade once the pointer stops.
 
 ## 9. Gallery hero carousel (full-screen slides with segment nav)
 
