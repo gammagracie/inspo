@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Artists</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@500&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body style="--color:#FC7B3E">
+<div class="window border">
+  <div class="bar border"><ul class="crumbs"><li>Artists</li></ul><a class="close" href="index.html" data-close></a></div>
+  <main>
+    <div class="sub border"><p>Artists shown since 2015</p></div>
+    <ul class="grid" id="grid"></ul>
+  </main>
+</div>
+<script src="site.js"></script>
+<script>renderArtists();</script>
+</body>
+</html>

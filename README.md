@@ -55,6 +55,13 @@ Functionality and styling to reuse.
 - Demo: https://gammagracie.github.io/inspo/serif-cards.html ([source](serif-cards.html))
 - Note: Descriptions for Prata, Literata, Viaoda Libre, Solway and Alice were cut off or missing in the reference screenshot, so they were written for this demo. Those cards are marked with a dot.
 
+## 7. Gallery window site (bevel borders, colored nav row)
+
+- Source: https://deitch.com/
+- What: Homepage plus three inner pages. Every page is one grey-bevel window over a grey desk, with a row of six colored section buttons and a cookie bar pinned below. Home is a scrolling ticker of current shows over a moving background. Exhibitions is a three-column card grid under a colored breadcrumb bar (also serves New York, Special Projects and Archive with their own color). Artists is the same grid with names. About is a text column beside a pinned captioned photo.
+- Demo: https://gammagracie.github.io/inspo/deitch/ ([source](deitch/))
+- How: The bevel is a 26px gradient tile used as `border-image` 8 round, so every edge reads as a tube. Grid cells draw only their right and bottom borders, and the grid is 4px wider than the window so the last edge hides. Type is in `rem` with the root size stepping from 40% to 62.5% by width, like the original. Nav icons animate on hover and on the current section. Artwork, names and copy are generated placeholders, not the gallery's.
+
 ## References
 
 Screen recordings and screenshots of the original pages live in [references/](references/README.md).
